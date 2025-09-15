@@ -27,6 +27,6 @@
     "build:win": "npm run build:ts && npm run copydb:win",
     "build:linux": "npm run build:ts && npm run copydb:linux",
     "start": "node ./dist/index.js",
-    "dev": "cross-env MIN_PLAYERS=1 TV_REQUIRED=false nodemon ./src/index.ts"
+    "dev": "nodemon ./src/index.ts"
   }
 }
