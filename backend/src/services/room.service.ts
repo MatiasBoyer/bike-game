@@ -1,6 +1,7 @@
 import { Room, RoomState } from "interfaces/room.interface";
 import exceptions from "../exceptions/room.exception";
 import { Player, PlayerState } from "interfaces/player.interface";
+import PlayerService from "./player.service";
 import { Socket } from "socket.io";
 
 let rooms: Room[] = [];
@@ -55,16 +56,7 @@ function DeleteRoom(room: Room) {
 }
 
 function JoinRoom(room: Room, socket: Socket): Player {
-  const newPlayer: Player = {
-    socket: socket,
-
-    state: PlayerState.NOT_READY,
-
-    prevPoints: [],
-    currentPoint: [500 * 0.25, 500 * 0.25],
-    currentDirection: [1, 0],
-  };
-  room.players.push(newPlayer);
+  room.players.push(PlayerService.CreatePlayer(socket));
   return room.players[room.players.length - 1];
 }
 
