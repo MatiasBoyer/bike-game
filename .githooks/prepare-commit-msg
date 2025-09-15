@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# Path to commit message file
+COMMIT_MSG_FILE=$1
+COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
+STAGED_FILES=$(git diff --cached --name-only)
+
+FRONT_FILES=false
+BACK_FILES=false
+
+# Detect frontend/backend files
+for FILE in $STAGED_FILES; do
+  if [[ $FILE == *frontend* ]]; then FRONT_FILES=true; fi
+  if [[ $FILE == *backend* ]]; then BACK_FILES=true; fi
+done
+
+# Prevent committing both types at the same time
+if $FRONT_FILES && $BACK_FILES; then
+  echo "Error: Cannot commit both frontend and backend at the same time."
+  exit 1
+fi
+
+# Automatically prepend (front)/(back)
+if $FRONT_FILES && [[ $COMMIT_MSG != "(front)"* ]]; then
+  COMMIT_MSG="(front) $COMMIT_MSG"
+fi
+
+if $BACK_FILES && [[ $COMMIT_MSG != "(back)"* ]]; then
+  COMMIT_MSG="(back) $COMMIT_MSG"
+fi
+
+# Save the modified commit message back to file
+echo "$COMMIT_MSG" > "$COMMIT_MSG_FILE"
+
+# Validate conventional commit type
+if ! [[ $COMMIT_MSG =~ ^\((front|back|all)\)[[:space:]]+(feat|fix|chore|docs|style|refactor|perf|test|build|ci|revert): ]]; then
+  echo "Error: Commit message must start with '(front)', '(back)' or '(all)' followed by one of the conventional commit types."
+  echo "Example: (front) feat: add login button"
+  exit 1
+fi
+
+exit 0
