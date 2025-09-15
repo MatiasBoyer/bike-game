@@ -1,0 +1,24 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: bike-backend
+    ports:
+      - "5010:3000"
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: bike-frontend
+    ports:
+      - "5011:4000"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    env_file:
+      - ./frontend/.env
