@@ -1,0 +1,32 @@
+# Node modules (we'll install inside the container)
+node_modules
+npm-debug.log
+yarn-error.log
+pnpm-lock.yaml
+package-lock.json
+
+# Logs
+*.log
+logs
+*.tsbuildinfo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build output
+.next
+out
+dist
+
+# IDE / editor files
+.vscode
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Misc
+*.swp
+*.bak
