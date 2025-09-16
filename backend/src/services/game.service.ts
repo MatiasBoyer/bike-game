@@ -42,7 +42,7 @@ function spawn_players(players: Player[]) {
       else player.currentDirection = [0, -1];
     }
 
-    player.state = PlayerState.READY;
+    player.state = PlayerState.IN_GAME;
   }
 }
 
