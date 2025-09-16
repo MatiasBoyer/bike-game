@@ -4,10 +4,12 @@ import { Room, RoomState } from "../interfaces/room.interface";
 import { Player, PlayerState } from "../interfaces/player.interface";
 import { sleep } from "../utils/sleep.util";
 
+// 0 to y/2 -> top
+// y/2 to y-max -> bottom
 function spawn_players(players: Player[]) {
-  const center = [0, 0];
-  const radius = 250;
-  const startAngle = (3 * Math.PI) / 4;
+  const center = [250, 250];
+  const radius = 200;
+  const startAngle = (5 * Math.PI) / 4;
   const step = (2 * Math.PI) / players.length;
 
   for (let i = 0; i < players.length; i++) {
@@ -19,12 +21,26 @@ function spawn_players(players: Player[]) {
 
     const player: Player = players[i];
     player.currentPoint = point;
-    player.prevPoints = [];
+    player.prevPoints = [...point];
 
-    if (x >= center[0] && y <= center[1]) player.currentDirection = [-1, 0];
-    else if (x < center[0] && y <= center[1]) player.currentDirection = [0, -1];
-    else if (x >= center[0] && y > center[1]) player.currentDirection = [0, 1];
-    else player.currentDirection = [1, 0];
+    // [0, 1] -> hacia abajo
+    // [0, -1] -> hacia arriba
+    // [1, 0] -> derecha
+    // [-1, 0] -> izquierda
+
+    if (x <= center[0]) {
+      // left
+      // top
+      if (y <= center[1]) player.currentDirection = [0, 1];
+      // bottom
+      else player.currentDirection = [1, 0];
+    } else {
+      // rigth
+      // top
+      if (y <= center[1]) player.currentDirection = [-1, 0];
+      // bottom
+      else player.currentDirection = [0, -1];
+    }
 
     player.state = PlayerState.READY;
   }
@@ -33,8 +49,8 @@ function spawn_players(players: Player[]) {
 async function GameLoop(io: Server, room: Room) {
   switch (room.state) {
     case RoomState.WAITING_FOR_PLAYERS:
-      console.info("waiting for players, moving in 5s");
-      await sleep(5000);
+      console.info("waiting for players, moving in 1s");
+      await sleep(1000);
       room.state = RoomState.PREV_GAME;
       break;
     case RoomState.PREV_GAME:
@@ -51,7 +67,9 @@ async function GameLoop(io: Server, room: Room) {
         players: room.players.map((p: Player) => {
           return {
             id: p.socket.id,
-            points: [...p.prevPoints, ...p.currentPoint],
+            points: [...p.prevPoints, ...p.currentPoint].map((v) =>
+              Number(v.toFixed(2))
+            ),
             stroke: "green",
           };
         }),
