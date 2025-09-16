@@ -4,10 +4,12 @@ import { useEffect, useRef, useState } from "react";
 import { global_socket } from "@/sockets/index.socket";
 import Player from "@/components/game/player";
 import { IPlayer } from "@/types/player.type";
+import { IScene } from "@/types/scene.type";
 
 export default function Page() {
   const [connectionState, setConnectionState] = useState({ connected: false });
   const [players, setPlayers] = useState<IPlayer[]>([]);
+  const [sceneInfo, setSceneInfo] = useState<IScene | null>(null);
 
   const keydown = (ev: any) => {
     const dir: [number, number] = [0, 0];
@@ -57,6 +59,10 @@ export default function Page() {
       }));
     });
 
+    global_socket.on("game:init", (data: any) => {
+      setSceneInfo(data.scene);
+    });
+
     global_socket.on("game:update", (data: any) => {
       if (!data.players) return;
       setPlayers(data.players);
@@ -85,16 +91,24 @@ export default function Page() {
         <div style={{ background: "grey" }}>{JSON.stringify(players)}</div>
       </div>
       <div className="flex justify-center items-center flex-col w-screen">
-        <Stage width={500} height={500} style={{ background: "white" }}>
-          {players.map((p) => (
-            <Player
-              points={p.points}
-              stroke={p.stroke}
-              isAlive={p.state === 2}
-              key={"abcd"}
-            />
-          ))}
-        </Stage>
+        {sceneInfo && (
+          <Stage
+            width={sceneInfo.scene_width}
+            height={sceneInfo.scene_height}
+            style={{ background: "white" }}
+          >
+            {players.map((p) => (
+              <Player
+                points={p.points}
+                stroke={p.stroke}
+                isAlive={p.state === 2}
+                width={sceneInfo.lineWidth}
+                key={"abcd"}
+              />
+            ))}
+          </Stage>
+        )}
+        {!sceneInfo && <>Not loaded</>}
       </div>
     </>
   );

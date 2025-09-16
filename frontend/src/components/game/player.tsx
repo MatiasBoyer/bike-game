@@ -5,6 +5,7 @@ import { Layer, Line, Rect } from "react-konva";
 interface PlayerProps {
   points: LineConfig["points"];
   stroke: string;
+  width: number;
   isAlive: boolean;
   children?: React.ReactNode;
 }
@@ -15,7 +16,7 @@ export default function Player(props: PlayerProps) {
   const d: LineConfig = {
     points: props.points,
     stroke: props.stroke,
-    strokeWidth: 2.5,
+    strokeWidth: props.width,
     tension: 0,
   };
 
