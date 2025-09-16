@@ -142,6 +142,7 @@ async function GameLoop(io: Server, room: Room) {
               Number(v.toFixed(2))
             ),
             stroke: "green",
+            state: p.state,
           };
         }),
       });
