@@ -12,9 +12,12 @@ export default (io: Server, socket: Socket) => {
 
     try {
       const player: Player = playerService.FindPlayer(socket);
+
+      player.prevPoints = [...player.prevPoints, ...player.currentPoint];
       player.currentDirection = [value.x, value.y];
+
       callback({ success: true });
-    } catch(err) {
+    } catch (err) {
       callback({ success: false });
     }
   };
