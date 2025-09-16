@@ -4,10 +4,10 @@ dotenv.config();
 
 const nextConfig: NextConfig = {
   env: {
-    api_endpoint: process.env.REACT_APP_API_ENDPOINT,
-    project_path: process.env.REACT_APP_PROJ_PATH,
-    branch: process.env.REACT_APP_BRANCH,
-    build: process.env.REACT_APP_BUILD,
+    api_endpoint: process.env.API_ENDPOINT,
+    project_path: process.env.PROJ_PATH,
+    branch: process.env.BRANCH,
+    build: process.env.BUILD,
   },
 };
 

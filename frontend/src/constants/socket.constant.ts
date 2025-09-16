@@ -1,8 +1,11 @@
-import type { SocketOptions } from "socket.io-client";
+import type { ManagerOptions, SocketOptions } from "socket.io-client";
 import { GetAPI } from "@/utils/getapi.util";
+import config from "../utils/config.util";
 
-const socketURI: string = GetAPI() + '/ws';
+const socketURI: string = config.api_endpoint;
 
-const socketOptions: SocketOptions = {};
+const socketOptions: Partial<ManagerOptions & SocketOptions> | undefined = {
+  path: config.project_path + "/ws",
+};
 
 export { socketURI, socketOptions };

@@ -8,6 +8,4 @@ function get_socket(): Socket {
   return socket;
 }
 
-export {
-  get_socket,
-};
+export { get_socket };
