@@ -13,3 +13,15 @@ async function CreateRoom(room_password: string) {
   if (result.success === true) return true;
   else throw new roomExceptions.CreateRoomFailed();
 }
+
+async function LeaveRoom()
+{
+  const ev = "room:leave";
+  const payload = null;
+
+  const result: any = await emit(ev, payload);
+  if (result.success === true) return true;
+  else throw new roomExceptions.LeaveRoomFailed();
+}
+
+export { CreateRoom, LeaveRoom };
