@@ -46,6 +46,78 @@ function spawn_players(players: Player[]) {
   }
 }
 
+function doLinesIntersect(
+  p0: [number, number],
+  p1: [number, number],
+  q0: [number, number],
+  q1: [number, number]
+) {
+  const [x1, y1] = p0;
+  const [x2, y2] = p1;
+  const [x3, y3] = q0;
+  const [x4, y4] = q1;
+
+  // Bounding box check first (quick reject)
+  if (
+    Math.max(x1, x2) < Math.min(x3, x4) ||
+    Math.min(x1, x2) > Math.max(x3, x4) ||
+    Math.max(y1, y2) < Math.min(y3, y4) ||
+    Math.min(y1, y2) > Math.max(y3, y4)
+  ) {
+    return false;
+  }
+
+  const denom = (y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1);
+  if (denom === 0) return false; // parallel or collinear
+
+  const ua = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / denom;
+  const ub = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) / denom;
+
+  return ua > 0 && ua < 1 && ub > 0 && ub < 1;
+}
+
+function check_collisions(players: Player[]) {
+  for (let i = 0; i < players.length; i++) {
+    const p: Player = players[i];
+    if (p.state === PlayerState.DEAD) continue;
+
+    for (let x = 0; x < players.length; x++) {
+      const player_points = [
+        ...players[x].prevPoints,
+        ...players[x].currentPoint,
+      ];
+
+      const segments: [number, number, number, number][] = [];
+
+      for (let i = 0; i < player_points.length - 2; i += 2) {
+        const p0: [number, number] = [player_points[i], player_points[i + 1]];
+        const p1: [number, number] = [
+          player_points[i + 2],
+          player_points[i + 3],
+        ];
+
+        for (const [x1, y1, x2, y2] of segments) {
+          if (doLinesIntersect(p0, p1, [x1, y1], [x2, y2])) {
+            p.state = PlayerState.DEAD;
+            break;
+          }
+        }
+
+        segments.push([p0[0], p0[1], p1[0], p1[1]]);
+      }
+    }
+  }
+}
+
+function move_players(players: Player[]) {
+  players.forEach((p) => {
+    if (p.state === PlayerState.DEAD) return;
+
+    p.currentPoint[0] += p.currentDirection[0] * gameConfig.speed;
+    p.currentPoint[1] += p.currentDirection[1] * gameConfig.speed;
+  });
+}
+
 async function GameLoop(io: Server, room: Room) {
   switch (room.state) {
     case RoomState.WAITING_FOR_PLAYERS:
@@ -58,10 +130,9 @@ async function GameLoop(io: Server, room: Room) {
       room.state = RoomState.IN_GAME;
       break;
     case RoomState.IN_GAME:
-      room.players.forEach((p) => {
-        p.currentPoint[0] += p.currentDirection[0] * gameConfig.speed;
-        p.currentPoint[1] += p.currentDirection[1] * gameConfig.speed;
-      });
+      check_collisions(room.players);
+
+      move_players(room.players);
 
       io.to(room.room_id).emit("game:update", {
         players: room.players.map((p: Player) => {
