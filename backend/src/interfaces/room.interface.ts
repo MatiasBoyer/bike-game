@@ -7,6 +7,12 @@ enum RoomState {
   AFTER_GAME = 3,
 }
 
+interface RoomScene {
+  lineWidth: number;
+  scene_width: number;
+  scene_height: number;
+}
+
 interface Room {
   room_id: string;
   room_password: string;
@@ -16,6 +22,8 @@ interface Room {
   players: Player[];
 
   loopfn: () => void;
+
+  scene: RoomScene;
 }
 
 export { Room, RoomState };

@@ -40,6 +40,11 @@ function CreateRoom(io: Server, room_password: string): Room {
     players: [],
 
     loopfn: null!,
+    scene: {
+      lineWidth: 2,
+      scene_width: 500,
+      scene_height: 500,
+    },
   };
 
   newRoom.loopfn = StartLoop(io, newRoom);
