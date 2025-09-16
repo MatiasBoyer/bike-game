@@ -32,6 +32,7 @@ export default (io: Server, socket: Socket) => {
       const room: Room = roomService.GetRoom_byId(value.id);
       const player: Player = roomService.JoinRoom(room, socket);
       socket.join(room.room_id);
+      socket.on("disconnect", () => leaveRoom(null, () => {}));
       callback({ success: true });
     } catch (err) {
       callback({ success: false, err });
@@ -46,8 +47,8 @@ export default (io: Server, socket: Socket) => {
 
     try {
       if (!socket.data.room) throw new playerException.NotInARoom();
-      roomService.LeaveRoom(socket.data.room, socket);
       socket.leave(socket.data.room.room_id);
+      roomService.LeaveRoom(socket.data.room, socket);
       callback({ success: true });
     } catch (err) {
       callback({ success: false, err });
