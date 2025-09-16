@@ -38,9 +38,10 @@ function CreateRoom(room_password: string): Room {
 
     players: [],
 
-    loopfn: setInterval(() => GameLoop(newRoom), 10),
+    loopfn: null!,
   };
 
+  newRoom.loopfn = setInterval(() => GameLoop(newRoom), 10);
   rooms.push(newRoom);
   console.log(`[roomService] room created: ${newRoom.room_id}`);
   return newRoom;
@@ -50,9 +51,11 @@ function DeleteRoom(room: Room) {
   room.players.forEach((p: Player) => {
     p.socket.disconnect(true);
   });
+  clearInterval(room.loopfn);
 
   const idx = rooms.findIndex((elem) => elem === room);
-  rooms.splice(idx);
+  if (idx !== -1) rooms.splice(idx);
+
   console.log(`[roomService] room deleted: ${room.room_id}`);
 }
 
@@ -61,11 +64,15 @@ function JoinRoom(room: Room, socket: Socket): Player {
   socket.data.room = room;
   room.players.push(player);
 
-  console.log(`[roomService] player ${player.socket.id} joined room: ${room.room_id}`);
+  console.log(
+    `[roomService] player ${player.socket.id} joined room: ${room.room_id}`
+  );
   return player;
 }
 
 function LeaveRoom(room: Room, socket: Socket) {
+  if (!room) return;
+
   const idx = room.players.findIndex((elem) => elem.socket === socket);
 
   if (idx === -1) throw new exceptions.PlayerNotFound();

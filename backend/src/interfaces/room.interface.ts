@@ -15,7 +15,7 @@ interface Room {
 
   players: Player[];
 
-  loopfn: NodeJS.Timeout;
+  loopfn: ReturnType<typeof setInterval>;
 }
 
 export { Room, RoomState };

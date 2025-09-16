@@ -2,6 +2,7 @@ import { Server, Socket } from "socket.io";
 import RegisterPlayerHandlers from "./sockets/player.socket";
 import RegisterRoomHandlers from "./sockets/room.socket";
 import { v4 } from "uuid";
+import roomService from "./services/room.service";
 
 export default function init_socket(io: Server) {
   const onConnection = (socket: Socket) => {
@@ -13,6 +14,7 @@ export default function init_socket(io: Server) {
 
     socket.on("disconnect", () => {
       console.info(`[DISCONNECT] ${socket.id}`);
+      roomService.LeaveRoom(socket.data.room, socket);
     });
   };
 

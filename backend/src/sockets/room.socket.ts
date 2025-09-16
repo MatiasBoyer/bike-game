@@ -32,26 +32,21 @@ export default (io: Server, socket: Socket) => {
       const room: Room = roomService.GetRoom_byId(value.id);
       const player: Player = roomService.JoinRoom(room, socket);
       socket.join(room.room_id);
-      socket.on("disconnect", () => leaveRoom(null, () => {}));
       callback({ success: true });
     } catch (err) {
+      console.error(err);
       callback({ success: false, err });
     }
   };
 
-  const leaveRoom = (payload: any, callback: Function) => {
-    /*const { error, value } = schemas.leaveRoom.validate(payload);
-    if (error) {
-      return;
-    }*/
-
+  const leaveRoom = (callback: Function | undefined = undefined) => {
     try {
       if (!socket.data.room) throw new playerException.NotInARoom();
       socket.leave(socket.data.room.room_id);
       roomService.LeaveRoom(socket.data.room, socket);
-      callback({ success: true });
+      callback?.({ success: true });
     } catch (err) {
-      callback({ success: false, err });
+      callback?.({ success: false, err });
     }
   };
 
