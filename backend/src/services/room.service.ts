@@ -2,9 +2,10 @@ import { Room, RoomState } from "../interfaces/room.interface";
 import exceptions from "../exceptions/room.exception";
 import { Player } from "../interfaces/player.interface";
 import PlayerService from "./player.service";
-import { Socket } from "socket.io";
+import { Server, Socket } from "socket.io";
 import { generate_string } from "../utils/string_gen";
 import { GameLoop } from "./game.service";
+import gameConfig from "../config/game.config";
 
 let rooms: Room[] = [];
 
@@ -28,7 +29,7 @@ function GetRoom_byPlayer(player: Player): Room {
   throw exceptions.RoomNotFound;
 }
 
-function CreateRoom(room_password: string): Room {
+function CreateRoom(io: Server, room_password: string): Room {
   // room data
   const newRoom: Room = {
     room_id: generate_string(8),
@@ -41,7 +42,10 @@ function CreateRoom(room_password: string): Room {
     loopfn: null!,
   };
 
-  newRoom.loopfn = setInterval(() => GameLoop(newRoom), 10);
+  newRoom.loopfn = setInterval(
+    () => GameLoop(io, newRoom),
+    gameConfig.loopinterval
+  );
   rooms.push(newRoom);
   console.log(`[roomService] room created: ${newRoom.room_id}`);
   return newRoom;
@@ -61,6 +65,7 @@ function DeleteRoom(room: Room) {
 
 function JoinRoom(room: Room, socket: Socket): Player {
   const player = PlayerService.CreatePlayer(socket);
+  socket.join(room.room_id);
   socket.data.room = room;
   room.players.push(player);
 
