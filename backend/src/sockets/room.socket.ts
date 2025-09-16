@@ -13,7 +13,7 @@ export default (io: Server, socket: Socket) => {
     }
 
     try {
-      const room: Room = roomService.CreateRoom(value.password);
+      const room: Room = roomService.CreateRoom(io, value.password);
       const player: Player = roomService.JoinRoom(room, socket);
 
       callback({ success: true });
