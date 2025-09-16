@@ -15,7 +15,7 @@ interface Room {
 
   players: Player[];
 
-  loopfn: ReturnType<typeof setInterval>;
+  loopfn: () => void;
 }
 
 export { Room, RoomState };

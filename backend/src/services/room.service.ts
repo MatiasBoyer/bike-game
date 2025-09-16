@@ -4,7 +4,7 @@ import { Player } from "../interfaces/player.interface";
 import PlayerService from "./player.service";
 import { Server, Socket } from "socket.io";
 import { generate_string } from "../utils/string_gen";
-import { GameLoop } from "./game.service";
+import { StartLoop } from "./game.service";
 import gameConfig from "../config/game.config";
 
 let rooms: Room[] = [];
@@ -42,10 +42,7 @@ function CreateRoom(io: Server, room_password: string): Room {
     loopfn: null!,
   };
 
-  newRoom.loopfn = setInterval(
-    () => GameLoop(io, newRoom),
-    gameConfig.loopinterval
-  );
+  newRoom.loopfn = StartLoop(io, newRoom);
   rooms.push(newRoom);
   console.log(`[roomService] room created: ${newRoom.room_id}`);
   return newRoom;
@@ -55,7 +52,7 @@ function DeleteRoom(room: Room) {
   room.players.forEach((p: Player) => {
     p.socket.disconnect(true);
   });
-  clearInterval(room.loopfn);
+  room?.loopfn?.();
 
   const idx = rooms.findIndex((elem) => elem === room);
   if (idx !== -1) rooms.splice(idx);
