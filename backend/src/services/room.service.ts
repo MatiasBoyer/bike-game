@@ -1,9 +1,10 @@
 import { Room, RoomState } from "../interfaces/room.interface";
 import exceptions from "../exceptions/room.exception";
-import { Player, PlayerState } from "../interfaces/player.interface";
+import { Player } from "../interfaces/player.interface";
 import PlayerService from "./player.service";
 import { Socket } from "socket.io";
 import { generate_string } from "../utils/string_gen";
+import { GameLoop } from "./game.service";
 
 let rooms: Room[] = [];
 
@@ -36,6 +37,8 @@ function CreateRoom(room_password: string): Room {
     state: RoomState.WAITING_FOR_PLAYERS,
 
     players: [],
+
+    loopfn: setInterval(() => GameLoop(newRoom), 10),
   };
 
   rooms.push(newRoom);
@@ -60,9 +63,16 @@ function JoinRoom(room: Room, socket: Socket): Player {
 function LeaveRoom(room: Room, socket: Socket) {
   const idx = room.players.findIndex((elem) => elem.socket === socket);
 
-  if (idx === -1) throw new exceptions.PlayerNotFound;
+  if (idx === -1) throw new exceptions.PlayerNotFound();
 
   room.players.splice(idx);
+}
+
+type IterateCB = (room: Room) => Promise<void>;
+async function Iterate(callback: IterateCB) {
+  for (let i = 0; i < rooms.length; i++) {
+    await callback(rooms[i]);
+  }
 }
 
 export default {
@@ -72,4 +82,5 @@ export default {
   DeleteRoom,
   JoinRoom,
   LeaveRoom,
+  Iterate,
 };

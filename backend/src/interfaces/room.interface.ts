@@ -14,6 +14,8 @@ interface Room {
   state: RoomState;
 
   players: Player[];
+
+  loopfn: NodeJS.Timeout;
 }
 
 export { Room, RoomState };
