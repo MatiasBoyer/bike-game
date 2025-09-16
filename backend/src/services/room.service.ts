@@ -42,6 +42,7 @@ function CreateRoom(room_password: string): Room {
   };
 
   rooms.push(newRoom);
+  console.log(`[roomService] room created: ${newRoom.room_id}`);
   return newRoom;
 }
 
@@ -52,12 +53,15 @@ function DeleteRoom(room: Room) {
 
   const idx = rooms.findIndex((elem) => elem === room);
   rooms.splice(idx);
+  console.log(`[roomService] room deleted: ${room.room_id}`);
 }
 
 function JoinRoom(room: Room, socket: Socket): Player {
   const player = PlayerService.CreatePlayer(socket);
   socket.data.room = room;
   room.players.push(player);
+
+  console.log(`[roomService] player ${player.socket.id} joined room: ${room.room_id}`);
   return player;
 }
 
@@ -69,6 +73,10 @@ function LeaveRoom(room: Room, socket: Socket) {
   socket.data.room = null;
 
   room.players.splice(idx);
+
+  if (room.players.length === 0) {
+    DeleteRoom(room);
+  }
 }
 
 type IterateCB = (room: Room) => Promise<void>;
