@@ -56,6 +56,7 @@ function DeleteRoom(room: Room) {
 
 function JoinRoom(room: Room, socket: Socket): Player {
   const player = PlayerService.CreatePlayer(socket);
+  socket.data.room = room;
   room.players.push(player);
   return player;
 }
@@ -64,6 +65,8 @@ function LeaveRoom(room: Room, socket: Socket) {
   const idx = room.players.findIndex((elem) => elem.socket === socket);
 
   if (idx === -1) throw new exceptions.PlayerNotFound();
+
+  socket.data.room = null;
 
   room.players.splice(idx);
 }

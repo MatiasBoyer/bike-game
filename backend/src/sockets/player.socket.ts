@@ -14,7 +14,7 @@ export default (io: Server, socket: Socket) => {
       const player: Player = playerService.FindPlayer(socket);
       player.currentDirection = [value.x, value.y];
       callback({ success: true });
-    } catch {
+    } catch(err) {
       callback({ success: false });
     }
   };
