@@ -47,8 +47,7 @@ function spawn_players(players: Player[]) {
   }
 }
 
-function check_collisions(players: Player[]) {
-  const lineWidth = 2;
+function check_collisions(lineWidth: number, players: Player[]) {
   const radius = lineWidth / 2;
 
   players.forEach((p) => {
@@ -109,11 +108,14 @@ async function GameLoop(io: Server, room: Room) {
       room.state = RoomState.PREV_GAME;
       break;
     case RoomState.PREV_GAME:
+      io.to(room.room_id).emit("game:init", {
+        scene: room.scene,
+      });
       spawn_players(room.players);
       room.state = RoomState.IN_GAME;
       break;
     case RoomState.IN_GAME:
-      check_collisions(room.players);
+      check_collisions(room.scene.lineWidth, room.players);
 
       move_players(room.players);
 
