@@ -6,6 +6,7 @@ const socketURI: string = config.api_endpoint;
 
 const socketOptions: Partial<ManagerOptions & SocketOptions> | undefined = {
   path: config.project_path + "/ws",
+  transports: ['websocket']
 };
 
 export { socketURI, socketOptions };

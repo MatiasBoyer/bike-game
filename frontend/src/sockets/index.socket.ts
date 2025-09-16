@@ -1,11 +1,18 @@
 import { socketURI, socketOptions } from "@/constants/socket.constant";
 import { io, Socket } from "socket.io-client";
 
-const socket: Socket = io(socketURI, socketOptions);
+let socket: Socket | null = null;
 
 function get_socket(): Socket {
-  if (!socket) throw new Error("No socket initialized");
+  if (!socket) {
+    console.log("created socket");
+    socket = io(socketURI, socketOptions);
+  }
   return socket;
 }
 
-export { get_socket };
+const g = globalThis as unknown as { _socket?: Socket };
+if (!g._socket) {
+  g._socket = get_socket();
+}
+export const global_socket = g._socket!;
