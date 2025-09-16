@@ -15,7 +15,7 @@ export default function Player(props: PlayerProps) {
   const d: LineConfig = {
     points: props.points,
     stroke: props.stroke,
-    strokeWidth: 1,
+    strokeWidth: 2.5,
     tension: 0,
   };
 
