@@ -14,8 +14,19 @@ async function CreateRoom(room_password: string) {
   else throw new roomExceptions.CreateRoomFailed();
 }
 
-async function LeaveRoom()
-{
+async function JoinRoom(id: string, password: string) {
+  const ev = "room:join";
+  const payload = {
+    id,
+    password,
+  };
+
+  const result: any = await emit(ev, payload);
+  if (result.success === true) return true;
+  else throw new roomExceptions.JoinRoomFailed();
+}
+
+async function LeaveRoom() {
   const ev = "room:leave";
   const payload = null;
 
@@ -24,4 +35,4 @@ async function LeaveRoom()
   else throw new roomExceptions.LeaveRoomFailed();
 }
 
-export { CreateRoom, LeaveRoom };
+export { CreateRoom, JoinRoom, LeaveRoom };
