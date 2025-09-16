@@ -5,13 +5,16 @@ import exception from "../exceptions/player.exception";
 let players: Player[] = [];
 
 function CreatePlayer(socket: Socket): Player {
+
+  const startPoint: number[] = [500 * 0.25, 500 * 0.25]
+
   const player: Player = {
     socket: socket,
     state: PlayerState.NOT_READY,
 
-    prevPoints: [],
+    prevPoints: [...startPoint],
 
-    currentPoint: [500 * 0.25, 500 * 0.25],
+    currentPoint: [startPoint[0], startPoint[1]],
     currentDirection: [0, 0],
   };
 
