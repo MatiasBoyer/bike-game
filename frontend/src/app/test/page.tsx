@@ -87,7 +87,12 @@ export default function Page() {
       <div className="flex justify-center items-center flex-col w-screen">
         <Stage width={500} height={500} style={{ background: "white" }}>
           {players.map((p) => (
-            <Player points={p.points} stroke={p.stroke} key={"abcd"} />
+            <Player
+              points={p.points}
+              stroke={p.stroke}
+              isAlive={p.state === 2}
+              key={"abcd"}
+            />
           ))}
         </Stage>
       </div>
