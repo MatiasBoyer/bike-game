@@ -1,18 +1,21 @@
-import { Room, RoomState } from "interfaces/room.interface";
+import { Room, RoomState } from "../interfaces/room.interface";
 import exceptions from "../exceptions/room.exception";
-import { Player, PlayerState } from "interfaces/player.interface";
+import { Player, PlayerState } from "../interfaces/player.interface";
 import PlayerService from "./player.service";
 import { Socket } from "socket.io";
+import { generate_string } from "../utils/string_gen";
 
 let rooms: Room[] = [];
 
-function GetRoom_byId(room_id: string): Room | undefined {
-  return rooms.find((x) => x.room_id === room_id);
+function GetRoom_byId(room_id: string): Room {
+  const room: Room | undefined = rooms.find((x) => x.room_id === room_id);
+
+  if (!room) throw exceptions.RoomNotFound;
+
+  return room;
 }
 
-function GetRoom_byPlayer(player: Player): Room | undefined {
-  const room: Room | undefined = undefined;
-
+function GetRoom_byPlayer(player: Player): Room {
   for (let i = 0; i < rooms.length; i++) {
     const player: Player | undefined = rooms[i].players.find(
       (p) => p === player
@@ -21,29 +24,22 @@ function GetRoom_byPlayer(player: Player): Room | undefined {
     if (player) return rooms[i];
   }
 
-  return undefined;
+  throw exceptions.RoomNotFound;
 }
 
-function CreateRoom(room_id: string, room_password: string) {
+function CreateRoom(room_password: string): Room {
   // room data
   const newRoom: Room = {
-    room_id: "TEST",
-    room_password: "1234",
+    room_id: generate_string(8),
+    room_password: room_password,
 
     state: RoomState.WAITING_FOR_PLAYERS,
 
     players: [],
   };
 
-  // if room exists, do not create one
-  const existingRoom: Room | undefined = GetRoom_byId(newRoom.room_id);
-  if (existingRoom) {
-    return undefined;
-  }
-
-  // if room does not exist, create one
   rooms.push(newRoom);
-  return rooms[rooms.length - 1];
+  return newRoom;
 }
 
 function DeleteRoom(room: Room) {
@@ -56,14 +52,15 @@ function DeleteRoom(room: Room) {
 }
 
 function JoinRoom(room: Room, socket: Socket): Player {
-  room.players.push(PlayerService.CreatePlayer(socket));
-  return room.players[room.players.length - 1];
+  const player = PlayerService.CreatePlayer(socket);
+  room.players.push(player);
+  return player;
 }
 
 function LeaveRoom(room: Room, socket: Socket) {
   const idx = room.players.findIndex((elem) => elem.socket === socket);
 
-  if (idx === -1) throw exceptions.PlayerNotFound;
+  if (idx === -1) throw new exceptions.PlayerNotFound;
 
   room.players.splice(idx);
 }

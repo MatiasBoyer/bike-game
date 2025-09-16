@@ -1,5 +1,6 @@
-import { Player, PlayerState } from "interfaces/player.interface";
+import { Player, PlayerState } from "../interfaces/player.interface";
 import { Socket } from "socket.io";
+import { v4 } from "uuid";
 
 function CreatePlayer(socket: Socket) {
   const player: Player = {
@@ -15,4 +16,8 @@ function CreatePlayer(socket: Socket) {
   return player;
 }
 
-export default { CreatePlayer };
+function GetIDFromSocket(socket: Socket): string {
+  return socket.handshake.auth.uuid ?? socket.data.uuid ?? socket.id;
+}
+
+export default { CreatePlayer, GetIDFromSocket };
