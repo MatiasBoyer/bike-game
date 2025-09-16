@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const nextConfig: NextConfig = {
+  reactStrictMode: true,
   env: {
     api_endpoint: process.env.API_ENDPOINT,
     project_path: process.env.PROJ_PATH,
