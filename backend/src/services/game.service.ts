@@ -48,36 +48,48 @@ function spawn_players(players: Player[]) {
 }
 
 function check_collisions(players: Player[]) {
-  for (let i = 0; i < players.length; i++) {
-    const p: Player = players[i];
-    if (p.state === PlayerState.DEAD) continue;
+  const lineWidth = 2;
+  const radius = lineWidth / 2;
 
-    for (let x = 0; x < players.length; x++) {
-      const player_points = [
-        ...players[x].prevPoints,
-        ...players[x].currentPoint,
+  players.forEach((p) => {
+    if (p.state === PlayerState.DEAD) return;
+
+    // Build the full segments array for this player
+    const points = [...p.prevPoints, ...p.currentPoint];
+    const segments: [number, number, number, number][] = [];
+    for (let i = 0; i < points.length - 2; i += 2) {
+      const seg: [number, number, number, number] = [
+        points[i],
+        points[i + 1],
+        points[i + 2],
+        points[i + 3],
       ];
+      // skip zero-length segments
+      if (seg[0] === seg[2] && seg[1] === seg[3]) continue;
+      segments.push(seg);
+    }
 
-      const segments: [number, number, number, number][] = [];
-
-      for (let i = 0; i < player_points.length - 2; i += 2) {
-        const p0: [number, number] = [player_points[i], player_points[i + 1]];
-        const p1: [number, number] = [
-          player_points[i + 2],
-          player_points[i + 3],
-        ];
-
-        for (const [x1, y1, x2, y2] of segments) {
-          if (collisionsUtil.doLinesIntersect(p0, p1, [x1, y1], [x2, y2])) {
-            p.state = PlayerState.DEAD;
-            break;
-          }
+    // Compare every segment with all previous segments except adjacent
+    for (let i = 0; i < segments.length; i++) {
+      const [x1, y1, x2, y2] = segments[i];
+      for (let j = 0; j < i - 1; j++) {
+        // skip previous adjacent segment
+        const [a1, b1, a2, b2] = segments[j];
+        if (
+          collisionsUtil.segmentsCollideWithWidth(
+            [x1, y1],
+            [x2, y2],
+            [a1, b1],
+            [a2, b2],
+            radius
+          )
+        ) {
+          p.state = PlayerState.DEAD;
+          return;
         }
-
-        segments.push([p0[0], p0[1], p1[0], p1[1]]);
       }
     }
-  }
+  });
 }
 
 function move_players(players: Player[]) {
