@@ -2,4 +2,6 @@ import BaseError from "./base.exceptions";
 
 class FailedToUpdateDirection extends BaseError {}
 
-export default { FailedToUpdateDirection };
+const playerExceptions = { FailedToUpdateDirection };
+
+export default playerExceptions;

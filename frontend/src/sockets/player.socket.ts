@@ -1,6 +1,6 @@
-import { Socket } from "socket.io-client";
 import { emit } from "../utils/socket.util";
 import playerExceptions from "../exceptions/player.exceptions";
+import { IResponse } from "@/types/ioresponse.type";
 
 async function UpdateDirection(arrow_key: string) {
   const ev = "player:update_direction";
@@ -31,7 +31,7 @@ async function UpdateDirection(arrow_key: string) {
 
   const payload = { x, y };
 
-  const result: any = await emit(ev, payload);
+  const result = await emit(ev, payload) as IResponse<unknown>;
 
   if (result.success === true) return true;
   else throw new playerExceptions.FailedToUpdateDirection();

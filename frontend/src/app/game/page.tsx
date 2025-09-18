@@ -1,11 +1,11 @@
 "use client";
-import { Layer, Stage } from "react-konva";
-import { useEffect, useRef, useState } from "react";
+import { Stage } from "react-konva";
+import { useEffect, useState } from "react";
 import { global_socket } from "@/sockets/index.socket";
 import Player from "@/components/game/player";
 import { IPlayer } from "@/types/player.type";
-import { IScene } from "@/types/scene.type";
-import { IGameState } from "@/types/gamestate.type";
+import { IGameInit, IGameScene, IGameState } from "@/types/game.type";
+import { IResponse } from "@/types/ioresponse.type";
 
 function AskForReadyness({ onReady }: { onReady: () => void }) {
   return (
@@ -21,7 +21,7 @@ function GameScene({
   sceneInfo,
   players,
 }: {
-  sceneInfo: IScene | null;
+  sceneInfo: IGameScene | null;
   players: IPlayer[];
 }) {
   return (
@@ -52,67 +52,53 @@ export default function Page() {
   const [players, setPlayers] = useState<IPlayer[]>([]);
   const [localIsReady, setReadyness] = useState<boolean>(false);
   const [gameState, setGameState] = useState<IGameState | null>(null);
-  const [sceneInfo, setSceneInfo] = useState<IScene | null>(null);
+  const [sceneInfo, setSceneInfo] = useState<IGameScene | null>(null);
 
-  const keydown = (ev: any) => {
-    const dir: [number, number] = [0, 0];
-    switch (ev.key) {
-      case "ArrowUp":
-      case "w":
-      case "W":
-        dir[0] = 0;
-        dir[1] = -1;
-        break;
-      case "ArrowDown":
-      case "s":
-      case "S":
-        dir[0] = 0;
-        dir[1] = 1;
-        break;
-      case "ArrowLeft":
-      case "a":
-      case "A":
-        dir[0] = -1;
-        dir[1] = 0;
-        break;
-      case "ArrowRight":
-      case "d":
-      case "D":
-        dir[0] = 1;
-        dir[1] = 0;
-        break;
-      default:
-        return;
-    }
-
-    global_socket.emit(
-      "player:update_direction",
-      { x: dir[0], y: dir[1] },
-      (cb: any) => {
-        //console.info(cb);
+  useEffect(() => {
+    const keydown = (ev: unknown) => {
+      if (!(ev instanceof KeyboardEvent)) return;
+      const dir: [number, number] = [0, 0];
+      switch (ev.key) {
+        case "ArrowUp":
+        case "w":
+        case "W":
+          dir[0] = 0;
+          dir[1] = -1;
+          break;
+        case "ArrowDown":
+        case "s":
+        case "S":
+          dir[0] = 0;
+          dir[1] = 1;
+          break;
+        case "ArrowLeft":
+        case "a":
+        case "A":
+          dir[0] = -1;
+          dir[1] = 0;
+          break;
+        case "ArrowRight":
+        case "d":
+        case "D":
+          dir[0] = 1;
+          dir[1] = 0;
+          break;
+        default:
+          return;
       }
-    );
-  };
 
-  const onConnected = () => {
-    // DEBUG OPTION!!!!!!!
-    /*global_socket.emit("room:create", { password: "1234" }, (data: any) => {
-      setConnectionState((prev) => ({
-        ...prev,
-        connected: true,
-      }));
-    });*/
-    // DEBUG OPTION!!!!!!!
+      global_socket.emit("player:update_direction", { x: dir[0], y: dir[1] });
+    };
 
     const raw = sessionStorage.getItem("sceneInfo");
     if (raw) setSceneInfo(JSON.parse(raw));
 
-    global_socket.on("game:init", (data: any) => {
+    global_socket.on("game:init", (data: IGameInit) => {
       setSceneInfo(data.scene);
     });
 
-    global_socket.on("game:update", (data: any) => {
-      setGameState((prev) => {
+    global_socket.on("game:update", (data: IGameState) => {
+      setGameState((prev: unknown) => {
         console.log(prev);
         if (data.scene) setSceneInfo(data.scene);
         if (data.players) setPlayers(data.players);
@@ -122,20 +108,17 @@ export default function Page() {
     });
 
     window.addEventListener("keydown", keydown, true);
-  };
 
-  const onDisconnected = () => {
-    window.removeEventListener("keydown", keydown);
-  };
-
-  useEffect(() => {
-    onConnected();
-    return () => onDisconnected();
+    return () => {
+      window.removeEventListener("keydown", keydown);
+      global_socket.off("game:init");
+      global_socket.off("game:update");
+    };
   }, []);
 
   const onReady = () => {
     console.log("readyness sent");
-    global_socket.emit("player:set_readyness", (data: any) => {
+    global_socket.emit("player:set_readyness", (data: IResponse<unknown>) => {
       console.log("cb:", data);
       if (data.success) setReadyness(true);
     });

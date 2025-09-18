@@ -1,10 +1,7 @@
 "use client";
-import { Layer, Stage } from "react-konva";
-import { useEffect, useRef, useState } from "react";
 import { global_socket } from "@/sockets/index.socket";
-import Player from "@/components/game/player";
-import { IPlayer } from "@/types/player.type";
-import { IScene } from "@/types/scene.type";
+import { IResponse } from "@/types/ioresponse.type";
+import { IRoomCreate } from "@/types/room.type";
 import { useRouter } from "next/navigation";
 
 export default function Page() {
@@ -20,19 +17,13 @@ export default function Page() {
       password: formData.get("i-roompw"),
     };
 
-    global_socket.emit("room:create", data, (cb: any) => {
+    global_socket.emit("room:create", data, (cb: IResponse<IRoomCreate>) => {
       console.log(cb);
       if (cb.success) {
         alert(`Room ID: ${cb?.data?.id}\nRoom PW: ${cb?.data?.password}`);
         router.push("/game");
       } else {
-        alert(
-          `${
-            cb.err
-              ? cb.err.map((e: any) => e.message).join("\n")
-              : "unexpected error"
-          }`
-        );
+        alert(`${cb.err ? cb.err.join("\n") : "unexpected error"}`);
       }
     });
   };
