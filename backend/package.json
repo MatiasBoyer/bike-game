@@ -4,6 +4,7 @@
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",
     "express": "^5.1.0",
+    "joi": "^18.0.1",
     "jsonwebtoken": "^9.0.2",
     "mariadb": "^3.4.5",
     "socket.io": "^4.8.1",
@@ -27,6 +28,6 @@
     "build:win": "npm run build:ts && npm run copydb:win",
     "build:linux": "npm run build:ts && npm run copydb:linux",
     "start": "node ./dist/index.js",
-    "dev": "cross-env MIN_PLAYERS=1 TV_REQUIRED=false nodemon ./src/index.ts"
+    "dev": "nodemon ./src/index.ts"
   }
 }
