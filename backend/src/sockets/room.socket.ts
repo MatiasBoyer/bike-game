@@ -16,6 +16,9 @@ export default (io: Server, socket: Socket) => {
     const room: Room = roomService.GetRoom_byId(value.id);
     const player: Player = roomService.JoinRoom(room, socket);
     socket.join(room.room_id);
+    return {
+      sceneInfo: room.scene,
+    };
   });
 
   const leaveRoom = schemaValidation(undefined, (value: any) => {
