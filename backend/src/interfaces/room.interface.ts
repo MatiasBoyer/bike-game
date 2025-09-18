@@ -20,6 +20,7 @@ interface Room {
   state: RoomState;
 
   players: Player[];
+  available_colors: string[];
 
   loopfn: () => void;
 

@@ -6,10 +6,12 @@ import { Server, Socket } from "socket.io";
 import { generate_string } from "../utils/string_gen";
 import { StartLoop } from "./game.service";
 import gameConfig from "../config/game.config";
-
-let rooms: Room[] = [];
+import random from "../utils/random.util";
 
 const room_id_length = 6;
+const default_colors = ["red", "green", "blue", "orange", "purple"];
+
+let rooms: Room[] = [];
 
 function GetRoom_byId(room_id: string): Room {
   const room: Room | undefined = rooms.find((x) => x.room_id === room_id);
@@ -40,6 +42,7 @@ function CreateRoom(io: Server, room_password: string): Room {
     state: RoomState.WAITING_FOR_PLAYERS,
 
     players: [],
+    available_colors: default_colors,
 
     loopfn: null!,
     scene: {
@@ -68,7 +71,7 @@ function DeleteRoom(room: Room) {
 }
 
 function JoinRoom(room: Room, socket: Socket): Player {
-  const player = PlayerService.CreatePlayer(socket);
+  const player = PlayerService.CreatePlayer(socket, room);
   socket.join(room.room_id);
   socket.data.room = room;
   room.players.push(player);
@@ -102,6 +105,16 @@ async function Iterate(callback: IterateCB) {
   }
 }
 
+function GetAvailableColor(room: Room): string {
+  const color = random.element(room.available_colors) ?? "black";
+
+  room.available_colors = room.available_colors.splice(
+    room.available_colors.indexOf(color)
+  );
+
+  return color;
+}
+
 export default {
   GetRoom_byId,
   GetRoom_byPlayer,
@@ -110,4 +123,5 @@ export default {
   JoinRoom,
   LeaveRoom,
   Iterate,
+  GetAvailableColor,
 };

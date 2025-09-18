@@ -118,7 +118,7 @@ async function StateLoop(io: Server, room: Room) {
           points: [...p.prevPoints, ...(p.currentPoint ?? [])].map((v) =>
             Number(v.toFixed(2))
           ),
-          stroke: "green",
+          stroke: p.color,
           state: p.state,
         };
       }),

@@ -1,15 +1,19 @@
 import { Player, PlayerState } from "../interfaces/player.interface";
 import { Socket } from "socket.io";
 import exception from "../exceptions/player.exception";
+import { Room } from "interfaces/room.interface";
+import roomService from "./room.service";
 
 let players: Player[] = [];
 
-function CreatePlayer(socket: Socket): Player {
+function CreatePlayer(socket: Socket, room: Room): Player {
   const player: Player = {
     socket: socket,
     state: PlayerState.NOT_READY,
 
     prevPoints: [],
+
+    color: roomService.GetAvailableColor(room),
 
     currentPoint: null!,
     currentDirection: [0, 0],

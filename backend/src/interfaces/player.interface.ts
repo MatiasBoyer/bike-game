@@ -12,6 +12,8 @@ interface Player {
 
     state: PlayerState;
 
+    color: string;
+
     // points related
     prevPoints: number[];
     currentPoint: [number, number];
