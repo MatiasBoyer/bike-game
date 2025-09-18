@@ -47,68 +47,6 @@ function spawn_players(players: Player[]) {
   }
 }
 
-function check_collisions(
-  lineWidth: number,
-  scene: RoomScene,
-  players: Player[]
-) {
-  const radius = lineWidth / 2;
-
-  players.forEach((p) => {
-    if (p.state !== PlayerState.IN_GAME) return;
-
-    const die = () => {
-      p.state = PlayerState.DEAD;
-    };
-
-    if (
-      p.currentPoint[0] <= 0 ||
-      p.currentPoint[0] >= scene.scene_width ||
-      p.currentPoint[1] <= 0 ||
-      p.currentPoint[1] >= scene.scene_height
-    ) {
-      die();
-      return;
-    }
-
-    // Build the full segments array for this player
-    const points = [...p.prevPoints, ...p.currentPoint];
-    const segments: [number, number, number, number][] = [];
-    for (let i = 0; i < points.length - 2; i += 2) {
-      const seg: [number, number, number, number] = [
-        points[i],
-        points[i + 1],
-        points[i + 2],
-        points[i + 3],
-      ];
-      // skip zero-length segments
-      if (seg[0] === seg[2] && seg[1] === seg[3]) continue;
-      segments.push(seg);
-    }
-
-    // Compare every segment with all previous segments except adjacent
-    for (let i = 0; i < segments.length; i++) {
-      const [x1, y1, x2, y2] = segments[i];
-      for (let j = 0; j < i - 1; j++) {
-        // skip previous adjacent segment
-        const [a1, b1, a2, b2] = segments[j];
-        if (
-          collisionsUtil.segmentsCollideWithWidth(
-            [x1, y1],
-            [x2, y2],
-            [a1, b1],
-            [a2, b2],
-            radius
-          )
-        ) {
-          die();
-          return;
-        }
-      }
-    }
-  });
-}
-
 function move_players(players: Player[]) {
   players.forEach((p) => {
     if (p.state !== PlayerState.IN_GAME) return;
@@ -143,13 +81,13 @@ async function GameLoop(io: Server, room: Room) {
       room.state = RoomState.IN_GAME;
       break;
     case RoomState.IN_GAME:
-      check_collisions(room.scene.lineWidth, room.scene, room.players);
+      collisionsUtil.check_collisions(room.scene.lineWidth, room.scene, room.players);
 
       move_players(room.players);
 
       // once there is no players in game, we finished!
       if (
-        room.players.filter((p) => p.state === PlayerState.IN_GAME).length === 0
+        room.players.filter((p) => p.state === PlayerState.IN_GAME).length <= 1
       ) {
         room.state = RoomState.AFTER_GAME;
       }
