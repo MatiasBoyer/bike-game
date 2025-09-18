@@ -1,6 +1,6 @@
 import { Server } from "socket.io";
 import gameConfig from "../config/game.config";
-import { Room, RoomState } from "../interfaces/room.interface";
+import { Room, RoomState, RoomScene } from "../interfaces/room.interface";
 import { Player, PlayerState } from "../interfaces/player.interface";
 import { sleep } from "../utils/sleep.util";
 import collisionsUtil from "../utils/game/collisions.util";
@@ -47,11 +47,29 @@ function spawn_players(players: Player[]) {
   }
 }
 
-function check_collisions(lineWidth: number, players: Player[]) {
+function check_collisions(
+  lineWidth: number,
+  scene: RoomScene,
+  players: Player[]
+) {
   const radius = lineWidth / 2;
 
   players.forEach((p) => {
     if (p.state === PlayerState.DEAD) return;
+
+    const die = () => {
+      p.state = PlayerState.DEAD;
+    };
+
+    if (
+      p.currentPoint[0] <= 0 ||
+      p.currentPoint[0] >= scene.scene_width ||
+      p.currentPoint[1] <= 0 ||
+      p.currentPoint[1] >= scene.scene_height
+    ) {
+      die();
+      return;
+    }
 
     // Build the full segments array for this player
     const points = [...p.prevPoints, ...p.currentPoint];
@@ -83,7 +101,7 @@ function check_collisions(lineWidth: number, players: Player[]) {
             radius
           )
         ) {
-          p.state = PlayerState.DEAD;
+          die();
           return;
         }
       }
@@ -115,7 +133,7 @@ async function GameLoop(io: Server, room: Room) {
       room.state = RoomState.IN_GAME;
       break;
     case RoomState.IN_GAME:
-      check_collisions(room.scene.lineWidth, room.players);
+      check_collisions(room.scene.lineWidth, room.scene, room.players);
 
       move_players(room.players);
 

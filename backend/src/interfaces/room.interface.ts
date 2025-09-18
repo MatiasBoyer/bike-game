@@ -26,4 +26,4 @@ interface Room {
   scene: RoomScene;
 }
 
-export { Room, RoomState };
+export { Room, RoomState, RoomScene };
