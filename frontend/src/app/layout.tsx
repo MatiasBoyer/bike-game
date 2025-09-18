@@ -1,8 +1,8 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "../styles/globals.css";
 import { metadata as c_metadata } from "../constants/metadata.constant";
-import Image from "next/image";
-import github_mark from "../assets/github-mark-white.svg";
+import Footer from "@/components/footer.component";
+import SocketParent from "@/components/socketparent.component";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,25 +27,10 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
         <div className="flex-grow flex flex-col justify-center items-center">
-          {children}
+          <SocketParent>{children}</SocketParent>
         </div>
 
-        <footer className="w-full p-4 text-xs flex flex-row justify-between">
-          <span>
-            made with ♥<br />
-            matías boyer
-          </span>
-          <span>
-            <a href="https://github.com/MatiasBoyer/bike-game">
-              <Image
-                src={github_mark}
-                alt="github-icon"
-                width={24}
-                height={24}
-              />
-            </a>
-          </span>
-        </footer>
+        <Footer />
       </body>
     </html>
   );
