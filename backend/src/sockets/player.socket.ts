@@ -37,5 +37,13 @@ export default (io: Server, socket: Socket) => {
     }
   );
 
+  const set_readyness = schemaValidation(undefined, (value: any) => {
+    const player: Player = playerService.FindPlayer(socket);
+    if (player.state === PlayerState.NOT_READY)
+      player.state = PlayerState.READY;
+    else throw new playerException.IncorrectState();
+  });
+
   socket.on("player:update_direction", update_direction);
+  socket.on("player:set_readyness", set_readyness);
 };
