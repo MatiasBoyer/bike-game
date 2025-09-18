@@ -53,12 +53,12 @@ export default function Page() {
 
   const onConnected = () => {
     // DEBUG OPTION!!!!!!!
-    global_socket.emit("room:create", { password: "1234" }, (data: any) => {
+    /*global_socket.emit("room:create", { password: "1234" }, (data: any) => {
       setConnectionState((prev) => ({
         ...prev,
         connected: true,
       }));
-    });
+    });*/
     // DEBUG OPTION!!!!!!!
 
     global_socket.on("game:init", (data: any) => {
