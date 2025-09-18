@@ -5,7 +5,6 @@ let socket: Socket | null = null;
 
 function get_socket(): Socket {
   if (!socket) {
-    console.log("created socket");
     socket = io(socketURI, socketOptions);
   }
   return socket;
