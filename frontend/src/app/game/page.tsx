@@ -98,8 +98,7 @@ export default function Page() {
     });
 
     global_socket.on("game:update", (data: IGameState) => {
-      setGameState((prev: unknown) => {
-        console.log(prev);
+      setGameState(() => {
         if (data.scene) setSceneInfo(data.scene);
         if (data.players) setPlayers(data.players);
         if (data.state === 3) setReadyness(false);
