@@ -14,7 +14,11 @@ export default function init_socket(io: Server) {
 
     socket.on("disconnect", () => {
       console.info(`[DISCONNECT] ${socket.id}`);
-      roomService.LeaveRoom(socket.data.room, socket);
+      try {
+        roomService.LeaveRoom(socket.data.room, socket);
+      } catch (err) {
+        console.error("error leaving room", err);
+      }
     });
   };
 
