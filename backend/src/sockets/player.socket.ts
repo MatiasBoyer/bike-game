@@ -1,4 +1,4 @@
-import { Player, update_direction } from "../interfaces/player.interface";
+import { Player, PlayerState, update_direction } from "../interfaces/player.interface";
 import { Server, Socket } from "socket.io";
 import schemas from "../schemas/player.schemas";
 import playerService from "../services/player.service";
@@ -13,6 +13,11 @@ export default (io: Server, socket: Socket) => {
 
     try {
       const player: Player = playerService.FindPlayer(socket);
+
+      if(player.state != PlayerState.IN_GAME)
+      {
+        throw new playerException.PlayerIsDead();
+      }
 
       const newDirection: [number, number] = [value.x, value.y];
 
