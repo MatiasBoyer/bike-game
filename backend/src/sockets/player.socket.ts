@@ -1,21 +1,21 @@
-import { Player, PlayerState, update_direction } from "../interfaces/player.interface";
+import {
+  Player,
+  PlayerState,
+  update_direction,
+} from "../interfaces/player.interface";
 import { Server, Socket } from "socket.io";
 import schemas from "../schemas/player.schemas";
 import playerService from "../services/player.service";
 import playerException from "../exceptions/player.exception";
+import schemaValidation from "../utils/socket/schemavalidation.util";
 
 export default (io: Server, socket: Socket) => {
-  const update_direction = (payload: update_direction, callback: Function) => {
-    const { error, value } = schemas.update_direction.validate(payload);
-    if (error) {
-      return;
-    }
-
-    try {
+  const update_direction = schemaValidation(
+    schemas.update_direction,
+    (value: any) => {
       const player: Player = playerService.FindPlayer(socket);
 
-      if(player.state != PlayerState.IN_GAME)
-      {
+      if (player.state != PlayerState.IN_GAME) {
         throw new playerException.PlayerIsDead();
       }
 
@@ -34,11 +34,8 @@ export default (io: Server, socket: Socket) => {
 
       player.prevPoints = [...player.prevPoints, ...player.currentPoint];
       player.currentDirection = newDirection;
-      callback({ success: true });
-    } catch (err) {
-      callback({ success: false });
     }
-  };
+  );
 
   socket.on("player:update_direction", update_direction);
 };
