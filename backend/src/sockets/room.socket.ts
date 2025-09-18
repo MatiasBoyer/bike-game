@@ -25,6 +25,7 @@ export default (io: Server, socket: Socket) => {
   const joinRoom = (payload: any, callback: Function) => {
     const { error, value } = schemas.joinRoom.validate(payload);
     if (error) {
+      callback({ success: false, err: error.details });
       return;
     }
 
