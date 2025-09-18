@@ -42,7 +42,7 @@ function CreateRoom(io: Server, room_password: string): Room {
     state: RoomState.WAITING_FOR_PLAYERS,
 
     players: [],
-    available_colors: default_colors,
+    available_colors: [...default_colors],
 
     loopfn: null!,
     scene: {
@@ -108,9 +108,10 @@ async function Iterate(callback: IterateCB) {
 function GetAvailableColor(room: Room): string {
   const color = random.element(room.available_colors) ?? "black";
 
-  room.available_colors = room.available_colors.splice(
-    room.available_colors.indexOf(color)
-  );
+  const index = room.available_colors.indexOf(color);
+  if (index !== -1) {
+    room.available_colors.splice(index, 1);
+  }
 
   return color;
 }
