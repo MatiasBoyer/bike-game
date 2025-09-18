@@ -55,7 +55,7 @@ function check_collisions(
   const radius = lineWidth / 2;
 
   players.forEach((p) => {
-    if (p.state === PlayerState.DEAD) return;
+    if (p.state !== PlayerState.IN_GAME) return;
 
     const die = () => {
       p.state = PlayerState.DEAD;
@@ -111,7 +111,7 @@ function check_collisions(
 
 function move_players(players: Player[]) {
   players.forEach((p) => {
-    if (p.state === PlayerState.DEAD) return;
+    if (p.state !== PlayerState.IN_GAME) return;
 
     p.currentPoint[0] += p.currentDirection[0] * gameConfig.speed;
     p.currentPoint[1] += p.currentDirection[1] * gameConfig.speed;
@@ -138,16 +138,21 @@ async function GameLoop(io: Server, room: Room) {
       move_players(room.players);
 
       io.to(room.room_id).emit("game:update", {
-        players: room.players.map((p: Player) => {
-          return {
-            id: p.socket.id,
-            points: [...p.prevPoints, ...p.currentPoint].map((v) =>
-              Number(v.toFixed(2))
-            ),
-            stroke: "green",
-            state: p.state,
-          };
-        }),
+        players: room.players
+          .filter(
+            (p1: Player) =>
+              p1.state === PlayerState.IN_GAME || p1.state === PlayerState.DEAD
+          )
+          .map((p: Player) => {
+            return {
+              id: p.socket.id,
+              points: [...p.prevPoints, ...(p.currentPoint ?? [])].map((v) =>
+                Number(v.toFixed(2))
+              ),
+              stroke: "green",
+              state: p.state,
+            };
+          }),
       });
       break;
     case RoomState.AFTER_GAME:
