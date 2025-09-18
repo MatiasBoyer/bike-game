@@ -10,6 +10,11 @@ export default (io: Server, socket: Socket) => {
   const createRoom = schemaValidation(schemas.createRoom, (value: any) => {
     const room: Room = roomService.CreateRoom(io, value.password);
     const player: Player = roomService.JoinRoom(room, socket);
+
+    return {
+      id: room.room_id,
+      password: room.room_password,
+    };
   });
 
   const joinRoom = schemaValidation(schemas.joinRoom, (value: any) => {
