@@ -24,7 +24,15 @@ export default function Page() {
     global_socket.emit("room:join", data, (cb: any) => {
       console.log(cb);
       if (cb.success) router.push("/game");
-      else alert(cb.err.map((e: any) => e.message).join('\n'));
+      else {
+        alert(
+          `${
+            cb.err
+              ? cb.err.map((e: any) => e.message).join("\n")
+              : "unexpected error"
+          }`
+        );
+      }
     });
   };
 
@@ -43,6 +51,7 @@ export default function Page() {
           className="flex-1 m-2 border rounded px-2"
           placeholder="123ASD"
           required={true}
+          minLength={6}
         />
       </div>
       <div className="flex flex-row w-full">
@@ -55,6 +64,7 @@ export default function Page() {
           className="flex-1 m-2 border rounded px-2"
           placeholder="topsecretpw"
           required={true}
+          minLength={3}
         />
       </div>
       <button
