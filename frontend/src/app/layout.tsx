@@ -1,6 +1,8 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "../styles/globals.css";
 import { metadata as c_metadata } from "../constants/metadata.constant";
+import Image from "next/image";
+import github_mark from "../assets/github-mark-white.svg";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -22,9 +24,23 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col justify-center items-center w-screen h-screen`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
-        {children}
+        <div className="flex-grow flex flex-col justify-center items-center">
+          {children}
+        </div>
+
+        <footer className="w-full p-4 text-xs flex flex-row justify-between">
+          <span>
+            made with ♥<br />
+            matías boyer
+          </span>
+          <span>
+            <a href="https://github.com/MatiasBoyer/">
+              <Image src={github_mark} alt="github-icon" width={24} height={24} />
+            </a>
+          </span>
+        </footer>
       </body>
     </html>
   );
