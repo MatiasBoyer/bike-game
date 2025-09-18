@@ -22,8 +22,10 @@ export default function Page() {
 
     global_socket.emit("room:create", data, (cb: any) => {
       console.log(cb);
-      if (cb.success) router.push("/game");
-      else {
+      if (cb.success) {
+        alert(`Room ID: ${cb?.data?.id}\nRoom PW: ${cb?.data?.password}`);
+        router.push("/game");
+      } else {
         alert(
           `${
             cb.err
