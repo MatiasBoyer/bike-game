@@ -121,15 +121,25 @@ function move_players(players: Player[]) {
 async function GameLoop(io: Server, room: Room) {
   switch (room.state) {
     case RoomState.WAITING_FOR_PLAYERS:
-      console.info("waiting for players, moving in 1s");
+      // sleep 1000 and check if all players are ready
       await sleep(1000);
-      room.state = RoomState.PREV_GAME;
+      if (
+        room.players.filter((p) => p.state === PlayerState.READY).length ===
+        room.players.length
+      ) {
+        // once ready, then we can start
+        room.state = RoomState.PREV_GAME;
+      }
       break;
     case RoomState.PREV_GAME:
+      // send the scene and spawn all players
       io.to(room.room_id).emit("game:init", {
         scene: room.scene,
       });
       spawn_players(room.players);
+
+      // wait 1s to start
+      await sleep(1000);
       room.state = RoomState.IN_GAME;
       break;
     case RoomState.IN_GAME:
@@ -137,40 +147,58 @@ async function GameLoop(io: Server, room: Room) {
 
       move_players(room.players);
 
-      io.to(room.room_id).emit("game:update", {
-        players: room.players
-          .filter(
-            (p1: Player) =>
-              p1.state === PlayerState.IN_GAME || p1.state === PlayerState.DEAD
-          )
-          .map((p: Player) => {
-            return {
-              id: p.socket.id,
-              points: [...p.prevPoints, ...(p.currentPoint ?? [])].map((v) =>
-                Number(v.toFixed(2))
-              ),
-              stroke: "green",
-              state: p.state,
-            };
-          }),
-      });
+      // once there is no players in game, we finished!
+      if (
+        room.players.filter((p) => p.state === PlayerState.IN_GAME).length === 0
+      ) {
+        room.state = RoomState.AFTER_GAME;
+      }
       break;
     case RoomState.AFTER_GAME:
+      // wait for 3s (cooldown)
+      await sleep(3000);
+
+      // start a new game
+      room.state = RoomState.PREV_GAME;
       break;
   }
+}
+
+async function StateLoop(io: Server, room: Room) {
+  // send game state to everyone
+  io.to(room.room_id).emit("game:update", {
+    state: room.state,
+    scene: room.scene,
+    players: room.players
+      .filter(
+        (p1: Player) =>
+          p1.state === PlayerState.IN_GAME || p1.state === PlayerState.DEAD
+      )
+      .map((p: Player) => {
+        return {
+          id: p.socket.id,
+          points: [...p.prevPoints, ...(p.currentPoint ?? [])].map((v) =>
+            Number(v.toFixed(2))
+          ),
+          stroke: "green",
+          state: p.state,
+        };
+      }),
+  });
 }
 
 function StartLoop(io: Server, room: Room) {
   let running = true;
 
-  async function loop() {
+  async function loop(fn: any) {
     while (running) {
-      await GameLoop(io, room);
+      await fn(io, room);
       await sleep(gameConfig.loopinterval);
     }
   }
 
-  loop();
+  loop(GameLoop);
+  loop(StateLoop);
 
   return () => {
     running = false;
