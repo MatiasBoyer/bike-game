@@ -36,7 +36,7 @@ export default function RootLayout({
             matías boyer
           </span>
           <span>
-            <a href="https://github.com/MatiasBoyer/">
+            <a href="https://github.com/MatiasBoyer/bike-game">
               <Image src={github_mark} alt="github-icon" width={24} height={24} />
             </a>
           </span>
