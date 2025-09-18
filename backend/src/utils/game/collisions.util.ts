@@ -1,3 +1,6 @@
+import { Player, PlayerState } from "../../interfaces/player.interface";
+import { RoomScene } from "../../interfaces/room.interface";
+
 function doLinesIntersect(
   p0: [number, number],
   p1: [number, number],
@@ -135,8 +138,133 @@ function segmentsCollideWithWidth(
   return distSq <= radius * radius;
 }
 
+function check_collisions(
+  lineWidth: number,
+  scene: RoomScene,
+  players: Player[]
+) {
+  const radius = lineWidth / 2;
+
+  players.forEach((p, i) => {
+    if (p.state !== PlayerState.IN_GAME) return;
+
+    const die = () => {
+      p.state = PlayerState.DEAD;
+    };
+
+    // --- 1. Scene boundary check ---
+    if (
+      p.currentPoint[0] <= 0 ||
+      p.currentPoint[0] >= scene.scene_width ||
+      p.currentPoint[1] <= 0 ||
+      p.currentPoint[1] >= scene.scene_height
+    ) {
+      die();
+      return;
+    }
+
+    // --- 2. Build this player's trail segments ---
+    const points = [...p.prevPoints, ...p.currentPoint];
+    const mySegments: [number, number, number, number][] = [];
+    for (let k = 0; k < points.length - 2; k += 2) {
+      const seg: [number, number, number, number] = [
+        points[k],
+        points[k + 1],
+        points[k + 2],
+        points[k + 3],
+      ];
+      if (seg[0] === seg[2] && seg[1] === seg[3]) continue;
+      mySegments.push(seg);
+    }
+
+    // --- 3. Self-collision check (skip adjacent) ---
+    for (let a = 0; a < mySegments.length; a++) {
+      const [x1, y1, x2, y2] = mySegments[a];
+      for (let b = 0; b < a - 1; b++) {
+        const [a1, b1, a2, b2] = mySegments[b];
+        if (
+          segmentsCollideWithWidth(
+            [x1, y1],
+            [x2, y2],
+            [a1, b1],
+            [a2, b2],
+            radius
+          )
+        ) {
+          die();
+          return;
+        }
+      }
+    }
+
+    // --- 4. Head vs other players ---
+    const myHead =
+      mySegments.length > 0 ? mySegments[mySegments.length - 1] : null;
+    if (!myHead) return;
+
+    const [hx1, hy1, hx2, hy2] = myHead;
+
+    players.forEach((other, j) => {
+      if (i === j || other.state !== PlayerState.IN_GAME) return;
+
+      // Build other player's trail
+      const otherPoints = [...other.prevPoints, ...other.currentPoint];
+      const otherSegments: [number, number, number, number][] = [];
+      for (let k = 0; k < otherPoints.length - 2; k += 2) {
+        const seg: [number, number, number, number] = [
+          otherPoints[k],
+          otherPoints[k + 1],
+          otherPoints[k + 2],
+          otherPoints[k + 3],
+        ];
+        if (seg[0] === seg[2] && seg[1] === seg[3]) continue;
+        otherSegments.push(seg);
+      }
+
+      if (otherSegments.length === 0) return;
+
+      const otherHead = otherSegments[otherSegments.length - 1];
+
+      // --- 4a. Head-to-head check ---
+      if (
+        segmentsCollideWithWidth(
+          [hx1, hy1],
+          [hx2, hy2],
+          [otherHead[0], otherHead[1]],
+          [otherHead[2], otherHead[3]],
+          radius
+        )
+      ) {
+        // both die
+        die();
+        other.state = PlayerState.DEAD;
+        return;
+      }
+
+      // --- 4b. Head-to-body check ---
+      for (let k = 0; k < otherSegments.length - 1; k++) {
+        const [ox1, oy1, ox2, oy2] = otherSegments[k];
+        if (
+          segmentsCollideWithWidth(
+            [hx1, hy1],
+            [hx2, hy2],
+            [ox1, oy1],
+            [ox2, oy2],
+            radius
+          )
+        ) {
+          // only my head dies
+          die();
+          return;
+        }
+      }
+    });
+  });
+}
+
 export default {
   doLinesIntersect,
   pointToSegmentDistance,
   segmentsCollideWithWidth,
+  check_collisions,
 };
