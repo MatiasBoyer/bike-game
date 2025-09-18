@@ -9,6 +9,8 @@ import gameConfig from "../config/game.config";
 
 let rooms: Room[] = [];
 
+const room_id_length = 6;
+
 function GetRoom_byId(room_id: string): Room {
   const room: Room | undefined = rooms.find((x) => x.room_id === room_id);
 
@@ -32,7 +34,7 @@ function GetRoom_byPlayer(player: Player): Room {
 function CreateRoom(io: Server, room_password: string): Room {
   // room data
   const newRoom: Room = {
-    room_id: generate_string(8),
+    room_id: generate_string(room_id_length),
     room_password: room_password,
 
     state: RoomState.WAITING_FOR_PLAYERS,
