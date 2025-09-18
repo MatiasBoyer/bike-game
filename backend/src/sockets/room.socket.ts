@@ -4,52 +4,25 @@ import schemas from "../schemas/room.schemas";
 import { Room } from "../interfaces/room.interface";
 import { Player } from "../interfaces/player.interface";
 import playerException from "../exceptions/player.exception";
+import schemaValidation from "../utils/socket/schemavalidation.util";
 
 export default (io: Server, socket: Socket) => {
-  const createRoom = (payload: any, callback: Function) => {
-    const { error, value } = schemas.createRoom.validate(payload);
-    if (error) {
-      return;
-    }
+  const createRoom = schemaValidation(schemas.createRoom, (value: any) => {
+    const room: Room = roomService.CreateRoom(io, value.password);
+    const player: Player = roomService.JoinRoom(room, socket);
+  });
 
-    try {
-      const room: Room = roomService.CreateRoom(io, value.password);
-      const player: Player = roomService.JoinRoom(room, socket);
+  const joinRoom = schemaValidation(schemas.joinRoom, (value: any) => {
+    const room: Room = roomService.GetRoom_byId(value.id);
+    const player: Player = roomService.JoinRoom(room, socket);
+    socket.join(room.room_id);
+  });
 
-      callback({ success: true });
-    } catch (err) {
-      callback({ success: false, err });
-    }
-  };
-
-  const joinRoom = (payload: any, callback: Function) => {
-    const { error, value } = schemas.joinRoom.validate(payload);
-    if (error) {
-      callback({ success: false, err: error.details });
-      return;
-    }
-
-    try {
-      const room: Room = roomService.GetRoom_byId(value.id);
-      const player: Player = roomService.JoinRoom(room, socket);
-      socket.join(room.room_id);
-      callback({ success: true });
-    } catch (err) {
-      console.error(err);
-      callback({ success: false, err });
-    }
-  };
-
-  const leaveRoom = (callback: Function | undefined = undefined) => {
-    try {
-      if (!socket.data.room) throw new playerException.NotInARoom();
-      socket.leave(socket.data.room.room_id);
-      roomService.LeaveRoom(socket.data.room, socket);
-      callback?.({ success: true });
-    } catch (err) {
-      callback?.({ success: false, err });
-    }
-  };
+  const leaveRoom = schemaValidation(undefined, (value: any) => {
+    if (!socket.data.room) throw new playerException.NotInARoom();
+    socket.leave(socket.data.room.room_id);
+    roomService.LeaveRoom(socket.data.room, socket);
+  });
 
   socket.on("room:create", createRoom);
   socket.on("room:join", joinRoom);
