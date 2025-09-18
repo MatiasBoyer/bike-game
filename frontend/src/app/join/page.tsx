@@ -23,8 +23,10 @@ export default function Page() {
 
     global_socket.emit("room:join", data, (cb: any) => {
       console.log(cb);
-      if (cb.success) router.push("/game");
-      else {
+      if (cb.success) {
+        sessionStorage.setItem("sceneInfo", JSON.stringify(cb?.data?.sceneInfo));
+        router.push("/game");
+      } else {
         alert(
           `${
             cb.err

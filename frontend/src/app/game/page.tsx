@@ -61,6 +61,9 @@ export default function Page() {
     });*/
     // DEBUG OPTION!!!!!!!
 
+    const raw = sessionStorage.getItem("sceneInfo");
+    if (raw) setSceneInfo(JSON.parse(raw));
+
     global_socket.on("game:init", (data: any) => {
       setSceneInfo(data.scene);
     });
